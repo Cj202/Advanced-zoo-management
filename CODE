@@ -1,0 +1,114 @@
+import sqlite3
+from abc import ABC, abstractmethod
+
+# Database Setup
+conn = sqlite3.connect("zoo.db")
+cursor = conn.cursor()
+
+# Creating table if not exists
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS animals (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        species TEXT,
+        sound TEXT
+    )
+""")
+conn.commit()
+
+# Abstract Class (Encapsulation & Abstraction)
+class Animal(ABC):
+    def __init__(self, name, species, sound):
+        self.__name = name  # Private variable
+        self.__species = species
+        self.__sound = sound
+
+    @abstractmethod
+    def speak(self):
+        pass
+
+    def get_details(self):
+        return f"{self.__name} ({self.__species}) - Sound: {self.__sound}"
+
+# Child Classes (Inheritance & Polymorphism)
+class Dog(Animal):
+    def speak(self):
+        return "Bark"
+
+class Cat(Animal):
+    def speak(self):
+        return "Meow"
+
+class Lion(Animal):
+    def speak(self):
+        return "Roar"
+
+# Zoo Management System
+class Zoo:
+    def __init__(self):
+        self.animals = []
+
+    def add_animal(self, animal):
+        self.animals.append(animal)
+        # Save to database
+        cursor.execute("INSERT INTO animals (name, species, sound) VALUES (?, ?, ?)", 
+                       (animal.get_details().split(" (")[0], animal.__class__.__name__, animal.speak()))
+        conn.commit()
+        print(f"✅ {animal.get_details()} added to the Zoo!")
+
+    def view_animals(self):
+        print("\n🐾 Zoo Animals 🐾")
+        cursor.execute("SELECT * FROM animals")
+        rows = cursor.fetchall()
+        if not rows:
+            print("No animals in the zoo.")
+        else:
+            for row in rows:
+                print(f"ID: {row[0]} | Name: {row[1]} | Species: {row[2]} | Sound: {row[3]}")
+
+    def remove_animal(self, animal_id):
+        cursor.execute("DELETE FROM animals WHERE id=?", (animal_id,))
+        conn.commit()
+        print(f"❌ Animal with ID {animal_id} removed from the zoo!")
+
+# User Interaction
+zoo = Zoo()
+
+while True:
+    print("\n🐘 Zoo Management System 🦁")
+    print("1. Add Animal")
+    print("2. View Animals")
+    print("3. Remove Animal")
+    print("4. Exit")
+    choice = input("Enter your choice: ")
+
+    if choice == "1":
+        name = input("Enter Animal Name: ")
+        print("Choose Species: 1. Dog  2. Cat  3. Lion")
+        species_choice = input("Enter species choice: ")
+
+        if species_choice == "1":
+            animal = Dog(name, "Dog", "Bark")
+        elif species_choice == "2":
+            animal = Cat(name, "Cat", "Meow")
+        elif species_choice == "3":
+            animal = Lion(name, "Lion", "Roar")
+        else:
+            print("❌ Invalid choice!")
+            continue
+
+        zoo.add_animal(animal)
+
+    elif choice == "2":
+        zoo.view_animals()
+
+    elif choice == "3":
+        animal_id = input("Enter Animal ID to remove: ")
+        zoo.remove_animal(animal_id)
+
+    elif choice == "4":
+        print("👋 Exiting Zoo Management System. Goodbye!")
+        break
+
+    else:
+        print("❌ Invalid choice, please try again.")
