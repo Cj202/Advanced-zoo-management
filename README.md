@@ -15,8 +15,3 @@ It implements **OOP concepts** like **Encapsulation, Inheritance, Polymorphism, 
 - **SQLite (Database)**  
 - **OOP (Encapsulation, Inheritance, Polymorphism, Abstraction)**  
 
-## 📥 Installation
-```sh
-git clone <your-repo-url>
-cd Advanced-Zoo-Management
-python zoo.py
